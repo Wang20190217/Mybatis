@@ -167,6 +167,5 @@
     -->
     <mappers>
         <mapper resource="mappers/UserMapper.xml"/>
-        <package name=""/>
     </mappers>
 </configuration>

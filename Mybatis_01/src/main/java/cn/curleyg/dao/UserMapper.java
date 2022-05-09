@@ -1,5 +1,7 @@
 package cn.curleyg.dao;
 
+import cn.curleyg.domain.Fere;
+import cn.curleyg.domain.Role;
 import cn.curleyg.domain.User;
 import org.apache.ibatis.annotations.Select;
 
@@ -26,5 +28,10 @@ public interface UserMapper {
 
     @Select("select * from user where name like #{name}")
     List<User> selectName(String name);
+
+    Fere selectFere(Integer userid);
+    List<Role> selectRoleList(Integer id);
+
+    List<User> selectUserList(User user);
 
 }

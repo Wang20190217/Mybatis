@@ -3,6 +3,25 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.curleyg.dao.UserMapper">
+    <!--缓存（放在内存中的）
+     <cache eviction="LRU" flushInterval="100000" size="1024" readOnly="true"/>
+    eviction：删除策略
+       LRU – 最近最少使用：移除最长时间不被使用的对象。
+       FIFO – 先进先出：按对象进入缓存的顺序来移除它们。
+       SOFT – 软引用：基于垃圾回收器状态和软引用规则移除对象。
+       WEAK – 弱引用：更积极地基于垃圾收集器状态和弱引用规则移除对象。
+    flushInterval：刷新间隔，这里设置为100s，如果不设置的话，只有下次SQL被执行时才能刷新
+    size:引用数目，代表最多额能缓存对象的个数，不宜太大。不然会导致内存溢出
+    readOnly:是否只读，当true时缓存只能读取不能修改，可以快速读取缓存
+
+    自定义缓存：
+   <cache type="cn.curleyg.cache.Mycache"/>
+
+   整合第三方缓存
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+    -->
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
     <!--重复性sql语句-->
     <sql id="user_sql">
         select *
@@ -22,13 +41,47 @@
             <idArg column="id" javaType="int"/>
             <arg column="name" javaType="String"/>
         </constructor>
-<!--        <id property="id" javaType="int" column="id" jdbcType="INTEGER" />-->
+        <!--        <id property="id" javaType="int" column="id" jdbcType="INTEGER" />-->
     </resultMap>
 
-    <!--resultMap:级联查询 一对一-->
+    <!--resultMap:级联查询association 一对一-->
+    <!--resultMap:级联查询collection 一对多-->
+    <!--resultMap:级联查询discriminator 根据值的不同级联不同的信息-->
     <resultMap id="userMapFere" type="user">
-
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="address" property="address"/>
+        <result column="age" property="age"/>
+        <result column="phone" property="phone"/>
+        <result column="sex" property="sex"/>
+        <association property="fere" column="id" select="selectFere"/>
+        <collection property="roleList" column="id" select="selectRoleList"/>
     </resultMap>
+
+    <resultMap id="fere" type="fere">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="userid" property="userid"/>
+    </resultMap>
+
+    <resultMap id="role" type="role">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="userid" property="userid"/>
+    </resultMap>
+    <!--要求查询用户的时候，并且把伴侣的信息也查出来-->
+    <select id="selectFere" parameterType="int" resultMap="fere">
+        select *
+        from fere
+        where userid = #{userid}
+    </select>
+    <select id="selectRoleList" parameterType="int" resultMap="role">
+        select *
+        from role
+        where userid = #{userid}
+    </select>
+
+
     <!--int insertUser();useGeneratedKeys 使用自增 keyProperty id回填-->
     <insert id="insertUser" parameterType="user" useGeneratedKeys="true" keyProperty="id">
         insert into User
@@ -40,9 +93,102 @@
     </select>
 
 
-    <select id="selectOne" resultMap="userMap" parameterType="int">
+    <select id="selectOne" resultMap="userMapFere" parameterType="int">
         <include refid="user_sql2">
             <property name="id" value="${id}"/>
         </include>
     </select>
+
+
+    <!--动态sql-->
+    <!--1.if的使用  根据user中的条件惊醒筛选-->
+    <select id="selectUserList" parameterType="user" resultType="user">
+        select * from user where 1=1
+        <if test="name != null and name !=''">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="address != null and address !=''">
+            and age=#{address}
+        </if>
+        <if test="phone != null and phone !=''">
+            and phone=#{phone}
+        </if>
+    </select>
+    <!--2.where的使用  不需要where 1=1 但是会存在and-->
+    <select id="selectUserList1" parameterType="user" resultType="user">
+        select * from user
+        <where>
+            <if test="name != null and name !=''">
+                name like concat('%',#{name},'%') and
+            </if>
+            <if test="address != null and address !=''">
+                age=#{address} and
+            </if>
+            <if test="phone != null and phone !=''">
+                phone=#{phone}
+            </if>
+        </where>
+    </select>
+
+    <!--3.trim的使用 -->
+    <select id="selectUserLists2" parameterType="user" resultType="user">
+        select * from user
+        <trim prefix="where" suffixOverrides="and">
+            <if test="name != null and name !=''">
+                name like concat('%',#{name},'%') and
+            </if>
+            <if test="address != null and address !=''">
+                age=#{address} and
+            </if>
+            <if test="phone != null and phone !=''">
+                phone=#{phone}
+            </if>
+        </trim>
+    </select>
+
+    <!--4.choose、when、otherwise的使用  类似if else if else  -->
+    <select id="getEmpListByChoose" resultType="user">
+        <include refid="user_sql"/>
+        <where>
+            <choose>
+                <when test="name != '' and name != null">
+                    ename = #{ename}
+                </when>
+                <when test="age != '' and age != null">
+                    age = #{age}
+                </when>
+                <when test="sex != '' and sex != null">
+                    sex = #{sex}
+                </when>
+                <when test="address != '' and address != null">
+                    address = #{address}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+
+    <!--5.foreach -->
+    <insert id="insertMoreEmp">insert into user values
+        <foreach collection="emps" item="emp" separator=",">
+            (null,#{emp.ename},#{emp.age},#{emp.sex},#{emp.email},null)
+        </foreach>
+    </insert>
+
+    <delete id="deleteuser">
+        delete from user where
+        <foreach collection="eids" item="eid" separator="or">
+            id = #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteUser">
+        delete from user where id in
+        <foreach collection="eids" item="eid" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+
 </mapper>

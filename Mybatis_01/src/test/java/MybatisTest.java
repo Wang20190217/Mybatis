@@ -63,8 +63,9 @@ public class MybatisTest {
 
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
         //调用UserMapper接口中的方法，就可以根据UserMapper的全类名匹配元素文件，通过调用的方法名匹配 映射文件中的SQL标签，并执行标签中的SQL语句
-        User user = userMapper.selectOne(12);
-        System.out.println(user);
+        User user = userMapper.selectOne(1);
+        System.out.println(user);   //注释这句话，通过查看日志可以判断是否延迟加载
+        User user2 = userMapper.selectOne(1);//验证一级缓存默认开启，查看日志值执行了第一次的全部sql语句
 
 
     }
@@ -104,5 +105,18 @@ public class MybatisTest {
 
     }
 
+    @Test
+    public void  selectUserList() throws IOException {
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        //调用UserMapper接口中的方法，就可以根据UserMapper的全类名匹配元素文件，通过调用的方法名匹配 映射文件中的SQL标签，并执行标签中的SQL语句
+        User user = new User();
+        user.setName("丹丹2");
+        user.setPhone("15698762325");
+        List<User> userList = userMapper.selectUserList(user); //发现sql语句中只有两个条件
+        for (User u : userList) {
+            System.out.println(u);
+        }
+
+    }
 
 }
