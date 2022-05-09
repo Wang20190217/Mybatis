@@ -1,7 +1,4 @@
 package cn.curleyg.jdbc;
-
-import cn.curleyg.domain.User;
-
 import java.sql.*;
 
 /**

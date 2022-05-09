@@ -3,15 +3,127 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
+    <!--
+    properties:引入外部属性
+         property 自定义属性
+    -->
     <properties resource="jdbc.properties"/>
     <settings>
-<setting name="lazyLoadingEnabled" value="true"/>
+        <!--全局性地开启或关闭所有映射器配置文件中已配置的任何缓存。-->
+        <setting name="cacheEnabled" value="true"/>
+        <!--延迟加载的全局开关。当开启时，所有关联对象都会延迟加载。 特定关联关系中可通过设置 fetchType 属性来覆盖该项的开关状态。-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!--是否允许单个语句返回多结果集（需要数据库驱动支持）。-->
+        <setting name="multipleResultSetsEnabled" value="true"/>
+        <!--使用列标签代替列名。实际表现依赖于数据库驱动，具体可参考数据库驱动的相关文档，或通过对比测试来观察。-->
+        <setting name="useColumnLabel" value="true"/>
+        <!--允许 JDBC 支持自动生成主键，需要数据库驱动支持。如果设置为 true，将强制使用自动生成主键。尽管一些数据库驱动不支持此特性，但仍可正常工作（如 Derby）。-->
+        <setting name="useGeneratedKeys" value="false"/>
+        <!--指定 MyBatis 应如何自动映射列到字段或属性。 NONE 表示关闭自动映射；PARTIAL 只会自动映射没有定义嵌套结果映射的字段。 FULL 会自动映射任何复杂的结果集（无论是否嵌套）。-->
+        <setting name="autoMappingBehavior" value="PARTIAL"/>
+        <!--
+          指定发现自动映射目标未知列（或未知属性类型）的行为。
+             NONE: 不做任何反应
+             WARNING: 输出警告日志（'org.apache.ibatis.session.AutoMappingUnknownColumnBehavior' 的日志等级必须设置为 WARN）
+             FAILING: 映射失败 (抛出 SqlSessionException)
+        -->
+        <setting name="autoMappingUnknownColumnBehavior" value="WARNING"/>
+        <!--
+          配置默认的执行器。
+            SIMPLE 就是普通的执行器；
+            REUSE 执行器会重用预处理语句（PreparedStatement）；
+            BATCH 执行器不仅重用语句还会执行批量更新。
+        -->
+        <setting name="defaultExecutorType" value="SIMPLE"/>
+        <!--设置超时时间，它决定数据库驱动等待数据库响应的秒数。-->
+        <setting name="defaultStatementTimeout" value="25"/>
+        <!--为驱动的结果集获取数量（fetchSize）设置一个建议值。此参数只可以在查询设置中被覆盖。-->
+        <setting name="defaultFetchSize" value="100"/>
+        <!--是否允许在嵌套语句中使用分页（RowBounds）。如果允许使用则设置为 false。-->
+        <setting name="safeRowBoundsEnabled" value="false"/>
+        <!--是否开启驼峰命名自动映射，即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn。-->
+        <setting name="mapUnderscoreToCamelCase" value="false"/>
+        <!--
+        MyBatis 利用本地缓存机制（Local Cache）防止循环引用和加速重复的嵌套查询。
+        默认值为 SESSION，会缓存一个会话中执行的所有查询。
+        若设置值为 STATEMENT，本地缓存将仅用于执行语句，
+        对相同 SqlSession 的不同查询将不会进行缓存。
+        -->
+        <setting name="localCacheScope" value="SESSION"/>
+        <!--
+        当没有为参数指定特定的 JDBC 类型时，空值的默认 JDBC 类型。
+        某些数据库驱动需要指定列的 JDBC 类型，
+        多数情况直接用一般类型即可，比如 NULL、VARCHAR 或 OTHER。
+        -->
+        <setting name="jdbcTypeForNull" value="OTHER"/>
+        <!--指定对象的哪些方法触发一次延迟加载。-->
+        <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString"/>
     </settings>
+    <!--
+    定义别名三种方式
+        <package name="cn.curleyg.domain"/>  优先级第三
+        <typeAlias type="cn.curleyg.domain.User" alias="user"/> 优先级第二
+        @Alias(value = "user")  优先级第一
+    -->
     <typeAliases>
- <package name="cn.curleyg.domain"/>
+        <package name="cn.curleyg.domain"/>
     </typeAliases>
 
-    <environments default="mysql">
+    <!--
+    自定义类型处理器：
+    当有些数据库可以自定义类型时，我们需要告诉mybatis碰到这种类型需要装化成那种类型
+    -->
+    <typeHandlers>
+        <typeHandler handler="cn.curleyg.handler.MyStringTypeHandler" jdbcType="VARCHAR" javaType="string"/>
+        <!--存储的是下标的值，也就是0或者1-->
+        <!--        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="cn.curleyg.enums.Sex"/>-->
+        <!--存储的是名称，也就是 MALE或者FEMALE-->
+        <typeHandler handler="org.apache.ibatis.type.EnumTypeHandler" javaType="cn.curleyg.enums.Sex"/>
+    </typeHandlers>
+
+    <!--结果集返回时，对结果自动封装到pojo对象中，objectFactory就是帮我们创建对象实例-->
+    <objectFactory type="cn.curleyg.objectFactory.MyObjectFactory">
+        <property name="name" value="MyObjectFactory"/>
+    </objectFactory>
+
+    <!--插件-->
+<!--    <plugins>-->
+
+<!--    </plugins>-->
+
+
+
+    <!--配置环境信息，可配置多个数据源。默认只有一个-->
+    <environments default="Druid">
+        <environment id="Druid">
+            <!--
+            transactionManager：设置事务管理方式
+            属性：
+	            type：设置事务管理方式，type="JDBC|MANAGED"
+	            type="JDBC"：设置当前环境的事务管理都必须手动处理
+	            type="MANAGED"：设置事务被管理，例如spring中的AOP
+	        我们发现事务控制太繁琐了，通常我们会将事务交给Spring利用Aop来帮我们管理，
+            -->
+            <transactionManager type="JDBC"/>
+            <!--
+            dataSource：设置数据源
+            属性：
+	            type：设置数据源的类型，type="POOLED|UNPOOLED|JNDI"
+	            type="POOLED"：使用数据库连接池，即会将创建的连接进行缓存，下次使用可以从缓存中直接获取，不需要重新创建
+	            type="UNPOOLED"：不使用数据库连接池，即每次使用连接都需要重新创建
+	            type="JNDI"：调用上下文中的数据源
+            -->
+            <dataSource type="cn.curleyg.dataSource.MyDruidDataSourceFactory">
+                <!--设置驱动类的全类名-->
+                <property name="driverClass" value="${jdbc.driver}"/>
+                <!--设置连接数据库的连接地址-->
+                <property name="jdbcUrl" value="${jdbc.url}"/>
+                <!--设置连接数据库的用户名-->
+                <property name="username" value="${jdbc.username}"/>
+                <!--设置连接数据库的密码-->
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
         <environment id="mysql">
             <!--
             transactionManager：设置事务管理方式
@@ -41,7 +153,20 @@
             </dataSource>
         </environment>
     </environments>
+    <!--支持多数据库，根据不同的数据库厂商id来执行不同的sql 使用情况很少-->
+    <databaseIdProvider type="DB_VENDOR">
+        <property name="SQL Server" value="sqlserver"/>
+        <property name="DB2" value="db2"/>
+        <property name="Oracle" value="oracle" />
+    </databaseIdProvider>
+    <!--
+    配置mapper文件的位置
+    1.文件路径引入<mapper resource="mappers/UserMapper.xml"/>
+    2.用包名引入映射器<package name="cn.curleyg.dao"/> 需要保证接口和mapper在同一目录下
+    3.用类注册引入映射器 <package class="cn.curleyg.dao.UserMapper"/> 需要保证接口和mapper在同一目录下
+    -->
     <mappers>
         <mapper resource="mappers/UserMapper.xml"/>
+        <package name=""/>
     </mappers>
 </configuration>

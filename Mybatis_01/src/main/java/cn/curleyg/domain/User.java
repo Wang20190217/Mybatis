@@ -1,17 +1,20 @@
 package cn.curleyg.domain;
 
+import cn.curleyg.enums.Sex;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.ibatis.type.Alias;
 
 /**
  * 城南花已开<br>
  *
- * @Description: User实体类<br>
+ * @Description: User实体类 <br>
  * @Project: <br>
  * @CreateDate: Created in 2022/5/8 17:55 <br>
  * @Author: Wang
  */
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,4 +24,11 @@ public class User {
     private String address;
     private Integer age;
     private String phone;
+    private Sex sex;
+    private Fere fere;
+    public User(Integer id,String name){
+        System.out.println("执行了两个参数的构造函数");
+        this.setId(id);
+        this.setName(name);
+    }
 }

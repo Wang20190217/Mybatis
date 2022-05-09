@@ -3,7 +3,46 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.curleyg.dao.UserMapper">
+    <!--重复性sql语句-->
+    <sql id="user_sql">
+        select *
+        from user
+    </sql>
+    <!--带参数的sql语句-->
+    <sql id="user_sql2">
+        select *
+        from user
+        where id = #{id}
+    </sql>
 
-    <!--int insertUser();-->
-    <insert id="insertUser"> insert into User values (null, '张三', '杭州', 23, '18270441421')</insert>
+    <!--resultMap:自定义映射规则，指定类型转换器-->
+    <resultMap id="userMap" type="user">
+        <!--在对结果集封装，创建对象使用哪个构造函数 如下选择的是两个参数的构造函数-->
+        <constructor>
+            <idArg column="id" javaType="int"/>
+            <arg column="name" javaType="String"/>
+        </constructor>
+<!--        <id property="id" javaType="int" column="id" jdbcType="INTEGER" />-->
+    </resultMap>
+
+    <!--resultMap:级联查询 一对一-->
+    <resultMap id="userMapFere" type="user">
+
+    </resultMap>
+    <!--int insertUser();useGeneratedKeys 使用自增 keyProperty id回填-->
+    <insert id="insertUser" parameterType="user" useGeneratedKeys="true" keyProperty="id">
+        insert into User
+        values (null, #{name}, #{address}, #{age}, #{phone}, #{sex})
+    </insert>
+
+    <select id="selectList" resultType="user">
+        <include refid="user_sql"/>   <!--应用sql片段-->
+    </select>
+
+
+    <select id="selectOne" resultMap="userMap" parameterType="int">
+        <include refid="user_sql2">
+            <property name="id" value="${id}"/>
+        </include>
+    </select>
 </mapper>

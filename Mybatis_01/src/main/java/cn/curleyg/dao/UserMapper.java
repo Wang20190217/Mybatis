@@ -1,5 +1,10 @@
 package cn.curleyg.dao;
 
+import cn.curleyg.domain.User;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
+
 /**
  * 城南花已开<br>
  *
@@ -10,5 +15,16 @@ package cn.curleyg.dao;
  */
 public interface UserMapper {
     /*** 添加用户信息 */
-    int insertUser();
+    int insertUser(User user);
+
+    List<User> selectList();
+    User selectOne(Integer id);
+
+    //注解版
+    @Select("select * from user")
+    List<User> selectLists();
+
+    @Select("select * from user where name like #{name}")
+    List<User> selectName(String name);
+
 }
