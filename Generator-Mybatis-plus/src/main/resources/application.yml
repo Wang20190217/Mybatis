@@ -16,3 +16,4 @@ mybatis-plus:
       id-type: auto
       # 支持统配符 * 或者 ; 分割
   typeEnumsPackage: cn.curleyg.enums
+  mapper-locations: classpath:mapper/*.xml
