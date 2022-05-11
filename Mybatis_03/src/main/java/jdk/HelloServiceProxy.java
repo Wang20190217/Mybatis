@@ -15,6 +15,13 @@ import java.lang.reflect.Proxy;
 public class HelloServiceProxy implements InvocationHandler {
     private Object target;
 
+    /***
+     * @Description: 绑定对象，并返回一个代理对象
+     * @Param: [target]
+     * @Return: java.lang.Object
+     * @Author: Wang
+     * @Date: 2022/5/10 16:59
+    */
     public  Object bind(Object target){
         this.target=target;
         //取得代理对象

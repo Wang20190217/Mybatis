@@ -12,7 +12,7 @@ import org.apache.ibatis.datasource.pooled.PooledDataSourceFactory;
  * @Author: Wang
  */
 public class MyDruidDataSourceFactory extends PooledDataSourceFactory {
-    public MyDruidDataSourceFactory(){
+    public MyDruidDataSourceFactory() {
         this.dataSource = new DruidDataSource();
     }
 }

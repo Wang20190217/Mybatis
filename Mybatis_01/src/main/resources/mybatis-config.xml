@@ -87,11 +87,13 @@
     </objectFactory>
 
     <!--插件-->
-<!--    <plugins>-->
+    <!--    <plugins>-->
 
-<!--    </plugins>-->
+    <!--    </plugins>-->
 
-
+    <plugins> <!--设置分页插件-->
+        <plugin interceptor="com.github.pagehelper.PageInterceptor"/>
+    </plugins>
 
     <!--配置环境信息，可配置多个数据源。默认只有一个-->
     <environments default="Druid">
@@ -157,7 +159,7 @@
     <databaseIdProvider type="DB_VENDOR">
         <property name="SQL Server" value="sqlserver"/>
         <property name="DB2" value="db2"/>
-        <property name="Oracle" value="oracle" />
+        <property name="Oracle" value="oracle"/>
     </databaseIdProvider>
     <!--
     配置mapper文件的位置

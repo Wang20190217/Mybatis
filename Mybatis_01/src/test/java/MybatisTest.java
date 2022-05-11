@@ -1,6 +1,8 @@
 import cn.curleyg.dao.UserMapper;
 import cn.curleyg.domain.User;
 import cn.curleyg.enums.Sex;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -98,15 +100,30 @@ public class MybatisTest {
     public void selectLists() throws IOException {
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
         //调用UserMapper接口中的方法，就可以根据UserMapper的全类名匹配元素文件，通过调用的方法名匹配 映射文件中的SQL标签，并执行标签中的SQL语句
+        PageHelper.startPage(1, 5);
         List<User> user = userMapper.selectLists();
         for (User user1 : user) {
             System.out.println(user1);
         }
-
+        PageInfo<User> pageInfo = new PageInfo<>(user, 5);
+        System.out.println(pageInfo);
+        /*常用数据：
+            pageNum：当前页的页码
+            pageSize：每页显示的条数
+            size：当前页显示的真实条数
+            total：总记录数
+            pages：总页数
+            prePage：上一页的页码
+            nextPage：下一页的页码
+            isFirstPage/isLastPage：是否为第一页/最后一页
+            hasPreviousPage/hasNextPage：是否存在上一页/下一页
+            navigatePages：导航分页的页码数
+            navigatepageNums：导航分页的页码，[1,2,3,4,5]
+        */
     }
 
     @Test
-    public void  selectUserList() throws IOException {
+    public void selectUserList() throws IOException {
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
         //调用UserMapper接口中的方法，就可以根据UserMapper的全类名匹配元素文件，通过调用的方法名匹配 映射文件中的SQL标签，并执行标签中的SQL语句
         User user = new User();
